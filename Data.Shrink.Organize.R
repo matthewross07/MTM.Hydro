@@ -7,9 +7,9 @@ library(rgdal)
 library(lubridate)
 library(sp)
 library(reshape2)
-source(
-  '~/Dropbox/Shared Science/NSF_MTM_All/MTM_MudRiver/src_functions/qc_functions_mr.R'
-)
+library(dygraphs)
+library(xts)
+source('~/Dropbox/Shared Science/NSF_MTM_All/MTM_MudRiver/src_functions/qc_functions_mr.R')
 mytimezone <- 'Etc/GMT-5'
 
 #Read in shapefiles for watershed outlines
@@ -37,6 +37,12 @@ legend(
 setwd('~/Dropbox/Shared Science/NSF_MTM_All/MTM_MudRiver/tidy_data/')
 load('q.wat.year.2015.RData')
 load('q.sc.yr.RData')
+
+
+mx <- xts(qsct$MR.SC,order.by=qsct$min10)
+dygraph(mx) %>% dyOptions(useDataTimezone=T)
+
+
 #Read in and merge baseflow data Q is in ???
 setwd(
   '~/Dropbox/Shared Science/NSF_MTM_All/MTM_MudRiver/tidy_data/Baseflow.For.Matt/H.and.H'
@@ -50,7 +56,18 @@ hh$min10 <- qsct$min10
 q <- q[, 1:14]
 q <- merge(q, hh, by = 'min10')
 #RawData is at 10 minute interval, but I want to only display it at a 1 hour interval.
-q$hr <- round_minute(q$min10, 60) # 60 minute rounding.
+
+seq.4hr <- round_minute(rep(seq(q$min10[1]+60*60,q$min10[nrow(q)],length=365*12),each=2*6),60)
+min.seq <- round_minute(seq(min(q$min10),max(q$min10),length=365*24*6),10)
+min.df <- data.frame(min10=min.seq,hr=seq.4hr)
+
+
+
+
+
+q <- na.omit(merge(q,min.df,by='min10',all.x=T))
+
+#q$hr <- round_minute(q$min10, 60) # 60 minute rounding.
 
 
 #Melt data by this new hour column
@@ -63,10 +80,9 @@ q.hr <-
     q.melt,
     hr ~ variable,
     value.var = 'value',
-    fun.aggregate = median,
+    fun.aggregate = mean,
     na.rm = T
   )
-summary(q.hr)
 q.hr$RB.Q.mm[q.hr$RB.Q.mm == 0] <- 10^-6
 #Custom molten of q.hr to make shiny app easier
 #Convert site to a factor
@@ -87,7 +103,6 @@ isco.sheds$BigName <-
       'MR (3,600 ha, 46% mined)'
     )
   )
-
 
 #Ok so now we have the data for a shiny app, just need to save it.
 setwd("~/Dropbox/Shared Science/NSF_MTM_All/MTM_Shiny/MTM.Hydro")

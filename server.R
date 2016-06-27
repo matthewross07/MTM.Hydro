@@ -16,6 +16,8 @@ library(magicaxis)
 #Load data
 load('Hydro.Shine.RData')
 
+
+
 #Create a data frame with display text for geomorph section. Data from DEMs in Ross 2016
 g.d <- data.frame(Site=c('RB','LF','LB','MR'),OldSlope=c(19.3,17.5,20.5,21.6),
                   NewSlope=c(19.3,17.5,13.2,18.9),OldE=c(286,302,324,360),
@@ -152,7 +154,7 @@ shinyServer(function(input, output) {
         colors = 'blue',
         strokeWidth=3
       ) %>%
-      dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(40, 0))
+      dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(20, 0))
   })
   
   #Discharge plot with option to compare watershed to other sites. 
@@ -203,7 +205,6 @@ shinyServer(function(input, output) {
     cd1 <- ecdf(q.sub[,q.col[1]])
     fd <- data.frame(y=knots(cd1),x=1-cd1(knots(cd1)))
     par(mfrow=c(1,3),mar=c(3,3,2,2),mgp=c(2,1,0),cex=1,font.lab=2)
-    ?par
     #Plot if comparison selected
     if(input$comp != 3){
       q.cum2 <- cumsum(q.sub[,q.col[2]])
@@ -248,7 +249,7 @@ shinyServer(function(input, output) {
         colors = 'blue',
         strokeWidth=3
       ) %>%
-      dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(40, 0))
+      dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(20, 0))
     
     })
   output$q1.base <- renderDygraph({
