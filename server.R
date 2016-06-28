@@ -7,9 +7,7 @@ library(leaflet)
 library(ggplot2)
 library(dygraphs)
 library(sp)
-library(magrittr)
 library(xts)
-library(gplots)
 library(magicaxis)
 
 
@@ -27,7 +25,7 @@ g.d <- data.frame(Site=c('RB','LF','LB','MR'),OldSlope=c(19.3,17.5,20.5,21.6),
 
 
 #Setup a comparison table for plotting data on the same dygraph. 
-c.col <- col2hex(c('green4','chartreuse3','red4','tomato3'))
+c.col <- c("#008B00", "#66CD00", "#8B0000", "#CD4F39")
 
 c.table <- data.frame(Site = c('RB','LF','LB','MR'),
                       Treatment=c('LB','MR','RB','LF'),

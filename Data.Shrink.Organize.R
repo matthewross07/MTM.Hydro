@@ -39,7 +39,7 @@ load('q.wat.year.2015.RData')
 load('q.sc.yr.RData')
 
 
-mx <- xts(qsct$MR.SC,order.by=qsct$min10)
+mx <- xts(qsct$RB.SC,order.by=qsct$min10)
 dygraph(mx) %>% dyOptions(useDataTimezone=T)
 
 
