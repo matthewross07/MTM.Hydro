@@ -251,36 +251,63 @@ shinyServer(function(input, output) {
     
     })
   output$q1.base <- renderDygraph({
-    q1 <- xts(q.hr[,c('RB.hh','LB.hh','RB.Q.mm','LB.Q.mm')],order.by=q.hr$hr)
-    names(q1) <- c('RB.baseflow','LB.baseflow','RB.Q','LB.Q')
+    q1 <- xts(q.hr[,c('RB.hh','LB.hh')],order.by=q.hr$hr)
+    names(q1) <- c('RB.baseflow','LB.baseflow')
     dygraph(q1,group='base',height='250px') %>%
     dySeries('RB.baseflow',color=c.col[1],strokeWidth=3) %>%
       dySeries('LB.baseflow',color=c.col[3],strokeWidth=3) %>%
-      dySeries('RB.Q',color=c.col[1],strokeWidth=1.5,strokePattern='dashed') %>%
-      dySeries('LB.Q',color=c.col[3],strokeWidth=1.5,strokePattern='dashed') %>%
       dyOptions(useDataTimezone=T) %>%
       dyAxis('y',label='Q (mm/hr)')
-
   })
   output$q4.base <- renderDygraph({
-    q4 <- xts(q.hr[,c('LF.hh','MR.hh','LF.Q.mm','MR.Q.mm')],order.by=q.hr$hr)
-    names(q4) <- c('LF.baseflow','MR.baseflow','LF.Q','MR.Q')
+    q4 <- xts(q.hr[,c('LF.hh','MR.hh')],order.by=q.hr$hr)
+    names(q4) <- c('LF.baseflow','MR.baseflow')
     dygraph(q4,group='base',height='250px') %>%
       dySeries('LF.baseflow',color=c.col[2],strokeWidth=3) %>%
       dySeries('MR.baseflow',color=c.col[4],strokeWidth=3) %>%
-      dySeries('LF.Q',color=c.col[2],strokeWidth=1.5,strokePattern='dashed') %>%
-      dySeries('MR.Q',color=c.col[4],strokeWidth=1.5,strokePattern='dashed') %>%
       dyOptions(useDataTimezone=T) %>%
       dyAxis('y',label='Q (mm/hr)')
   })
 
+  output$b1 <- renderDygraph({
+    q1 <- xts(q.hr[,c('RB.hh','RB.Q.mm')],order.by=q.hr$hr)
+    names(q1) <- c('RB.baseflow','RB.Q')
+    dygraph(q1,group='base',height='250px') %>%
+      dySeries('RB.Q',color='darkblue',strokeWidth=3,fillGraph=F) %>%
+      dySeries('RB.baseflow',color='cyan',strokeWidth=2.5,fillGraph=T) %>%
+      dyOptions(useDataTimezone=T,fillAlpha=.3) %>%
+      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,1))
+  })
   
+  output$b2 <- renderDygraph({
+    q1 <- xts(q.hr[,c('LB.hh','LB.Q.mm')],order.by=q.hr$hr)
+    names(q1) <- c('LB.baseflow','LB.Q')
+    dygraph(q1,group='base',height='250px') %>%
+      dySeries('LB.Q',color='darkred',strokeWidth=3,fillGraph=F) %>%
+      dySeries('LB.baseflow',color='orange',strokeWidth=2.5,fillGraph=T) %>%
+      dyOptions(useDataTimezone=T,fillAlpha=.3) %>%
+      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
+  })
   
+  output$b3 <- renderDygraph({
+    q1 <- xts(q.hr[,c('LF.hh','LF.Q.mm')],order.by=q.hr$hr)
+    names(q1) <- c('LF.baseflow','LF.Q')
+    dygraph(q1,group='base',height='250px') %>%
+      dySeries('LF.Q',color='darkblue',strokeWidth=3,fillGraph=F) %>%
+      dySeries('LF.baseflow',color='cyan',strokeWidth=2.5,fillGraph=T) %>%
+      dyOptions(useDataTimezone=T,fillAlpha=.3) %>%
+      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
+  })
   
-  
-  
-  
-  
+  output$b4 <- renderDygraph({
+    q1 <- xts(q.hr[,c('MR.hh','MR.Q.mm')],order.by=q.hr$hr)
+    names(q1) <- c('MR.baseflow','MR.Q')
+    dygraph(q1,group='base',height='250px') %>%
+      dySeries('MR.Q',color='darkred',strokeWidth=3,fillGraph=F) %>%
+      dySeries('MR.baseflow',color='orange',strokeWidth=2.5,fillGraph=T) %>%
+      dyOptions(useDataTimezone=T,fillAlpha=.3) %>%
+      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
+  })
   
 })
-
+?dyOptions

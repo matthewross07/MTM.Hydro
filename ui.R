@@ -12,6 +12,7 @@ library(leaflet)
 library(shiny)
 library(dygraphs)
 
+
 shinyUI(fluidPage(sidebarLayout(
   sidebarPanel(
     p(
@@ -29,7 +30,7 @@ shinyUI(fluidPage(sidebarLayout(
       )
     ),
     width = 4
-  ),
+    ),
   mainPanel(width = 8,
             tabsetPanel(
               #Bit of code to containerize the gif plot
@@ -81,15 +82,25 @@ shinyUI(fluidPage(sidebarLayout(
                   12,
                   selectInput(
                     'base',
-                    label = 'Choose baseflow data to explore',
-                    choices=list(
-                    'Compare baseflow between sites' = 1)
+                    label = 'Choose baseflow data display',
+                    choices = list('Compare baseflow between sites' = 1,
+                                   'Look at baseflow for each site'=2)
                   )
                 )),
                 br(),
-                dygraphOutput('p.base', width = '95%',height='100px'),
-                dygraphOutput('q1.base',width='95%',height='200px'),
-                dygraphOutput('q4.base',width='95%',height='200px')
+                conditionalPanel(
+                  condition = "input.base == 1",
+                dygraphOutput('p.base', width = '95%', height = '100px'),
+                dygraphOutput('q1.base', width = '95%', height = '200px'),
+                dygraphOutput('q4.base', width = '95%', height = '200px')
+                ),
+                conditionalPanel(
+                  condition="input.base==2",
+                  dygraphOutput('b1', width = '95%', height = '150px'),
+                  dygraphOutput('b2', width = '95%', height = '150px'),
+                  dygraphOutput('b3', width = '95%', height = '150px'),
+                  dygraphOutput('b4', width = '95%', height = '150px')
+                )
               )
             ))
-)))
+  )))

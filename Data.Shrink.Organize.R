@@ -39,28 +39,36 @@ load('q.wat.year.2015.RData')
 load('q.sc.yr.RData')
 
 
-mx <- xts(qsct$RB.SC,order.by=qsct$min10)
-dygraph(mx) %>% dyOptions(useDataTimezone=T)
 
 
 #Read in and merge baseflow data Q is in ???
 setwd(
   '~/Dropbox/Shared Science/NSF_MTM_All/MTM_MudRiver/tidy_data/Baseflow.For.Matt/H.and.H'
 )
-hh <- read.csv('MTM.Q.H.and.H.csv', header = F)[, 1:5]
+hh <- read.csv('MTM.Baseflow.H.and.H.csv', header = F)[, 1:5]
+
 names(hh) <- c('min10', 'RB.hh', 'LF.hh', 'LB.hh', 'MR.hh')
+#multiply baseflow by 6 to get mm/hr
+for(i in 2:5){
+  hh[,i] <- hh[,i]*6
+}
 hh$min10 <- qsct$min10
+
+
 
 
 #Remove extraneous columns
 q <- q[, 1:14]
 q <- merge(q, hh, by = 'min10')
-#RawData is at 10 minute interval, but I want to only display it at a 1 hour interval.
+#RawData is at 10 minute interval, but I want to only display it at a 2 hour interval.
 
 seq.4hr <- round_minute(rep(seq(q$min10[1]+60*60,q$min10[nrow(q)],length=365*12),each=2*6),60)
 min.seq <- round_minute(seq(min(q$min10),max(q$min10),length=365*24*6),10)
 min.df <- data.frame(min10=min.seq,hr=seq.4hr)
 
+#Check data.
+mx <- xts(cbind(Base=q$RB.hh,Full=q$RB.Q.mm),order.by=q$min10)
+dygraph(mx) %>% dyOptions(useDataTimezone=T)
 
 
 
@@ -84,6 +92,7 @@ q.hr <-
     na.rm = T
   )
 q.hr$RB.Q.mm[q.hr$RB.Q.mm == 0] <- 10^-6
+
 #Custom molten of q.hr to make shiny app easier
 #Convert site to a factor
 isco.sheds$Site <-
