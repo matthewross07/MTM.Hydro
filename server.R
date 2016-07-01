@@ -19,7 +19,7 @@ load('Hydro.Shine.RData')
 #Create a data frame with display text for geomorph section. Data from DEMs in Ross 2016
 g.d <- data.frame(Site=c('RB','LF','LB','MR'),OldSlope=c(19.3,17.5,20.5,21.6),
                   NewSlope=c(19.3,17.5,13.2,18.9),OldE=c(286,302,324,360),
-                  NewE=c(286,302,337,362),VF=c(0,0,'11 million','45 million'),
+                  NewE=c(286,302,337,362),VF=c(0,0,'10-14 million','162-185 million'),
                   FullName=c("Rich's Branch","Left Fork","Laurel Branch","Mud River"),
                   area=c('118','3,400','68','3,600'),stringsAsFactors=F)
 
@@ -37,7 +37,7 @@ ld <- 4
 
 
 
-#Reorganize so leaflet plot allows for clicking on LB watershed
+#Reorganize so leaflet plot allows for clicking on LB catchment
 isco.sheds <- isco.sheds[c(1, 2, 4, 3), ]
 
 #Setup shiny server
@@ -70,20 +70,21 @@ shinyServer(function(input, output) {
       #   title = 'Study Catchment'
       # ) %>%
       addLayersControl(
-        position = 'bottomright',
+        position = 'topright',
         baseGroups = c('Topo Map', 'Aerial Imagery'),
         overlayGroups = c('Catchments'),
         options = layersControlOptions(collapsed = F, autoZIndex =
-                                         T)
-      )
+                                         T)) %>% 
+    setView(lng = -81.93603515625, lat = 38.1046650598288, zoom = 10)
   })
+
   
   #Get id from map click
   id <- reactive({
     validate(
       need(
         input$MapMine_shape_click != "",
-        "Please select a watershed from the map to the left to view plots and data.
+        "Please select a catchment from the map to the left to view plots and data.
         App may take a few seconds to load data after selecting data (depending on internet connection speed)."
       )
       )
@@ -96,12 +97,12 @@ shinyServer(function(input, output) {
   output$Sum.Text <- renderText({
     z <- g.d[g.d$Site == id()$id,]
     if(id()$id %in% c('LF','RB')){
-      paste0(bquote(paste0(.(z$FullName),'or',.(z$Site),'is a',.(z$area),
+      paste0(bquote(paste0(.(z$FullName),'(',.(z$Site),')','is a',.(z$area),
                          'ha reference catchment that has a mean slope of',.(z$OldSlope),'degrees',
                          'and a mean elevation of',.(z$OldE),
                          'm with shallow soils typically less than 2m deep.'))[-1])
     }else{
-      paste0(bquote(paste0(.(z$FullName),'or',.(z$Site),'is a',.(z$area),
+      paste0(bquote(paste0(.(z$FullName),'(',.(z$Site),')','is a',.(z$area),
                            'ha mined catchment that, before mining, had a mean slope of',.(z$OldSlope),'degrees',
                            'and a mean elevation of',.(z$OldE),
                            'm with shallow soils typically less than 2m deep.',
@@ -114,7 +115,7 @@ shinyServer(function(input, output) {
     }
   })
   
-  #Grabs gif images to display watersheds
+  #Grabs gif images to display catchments
   output$geogif <- renderImage({
     gname <- paste(id()$id,'.gif',sep='')
     path <- normalizePath(file.path('www',
@@ -155,7 +156,7 @@ shinyServer(function(input, output) {
       dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(20, 0))
   })
   
-  #Discharge plot with option to compare watershed to other sites. 
+  #Discharge plot with option to compare catchment to other sites. 
   output$qplots <- renderDygraph({
     if(input$comp == 3){
       q.col <- paste(id()$id, '.Q.mm', sep = '')
@@ -229,7 +230,7 @@ shinyServer(function(input, output) {
     }else{
       plot(y~x,data=fd,col=dy.cols[1],ylab='Q (mm/hr)',xlab='Exceedance',type='l',lwd=ld,log='y',main='Flow Duration Curve',yaxt='n')
       magaxis(2)
-      plot(q.cum1~q.sub$hr,col=dy.cols[1],xlab='',ylab='Cumulative Q (mm)',type='l',lwd=ld,main='Cumualtive Q')
+      plot(q.cum1~q.sub$hr,col=dy.cols[1],xlab='',ylab='Cumulative Q (mm)',type='l',lwd=ld,main='Cumulative Q')
       plot(1,1,xaxt='n',yaxt='n',xlab='',ylab='')
       legend('center',lty=1,col=dy.cols[1],legend=id()$id)
     }
@@ -257,7 +258,7 @@ shinyServer(function(input, output) {
     dySeries('RB.baseflow',color=c.col[1],strokeWidth=3) %>%
       dySeries('LB.baseflow',color=c.col[3],strokeWidth=3) %>%
       dyOptions(useDataTimezone=T) %>%
-      dyAxis('y',label='Q (mm/hr)')
+      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,0.3))
   })
   output$q4.base <- renderDygraph({
     q4 <- xts(q.hr[,c('LF.hh','MR.hh')],order.by=q.hr$hr)
@@ -266,7 +267,7 @@ shinyServer(function(input, output) {
       dySeries('LF.baseflow',color=c.col[2],strokeWidth=3) %>%
       dySeries('MR.baseflow',color=c.col[4],strokeWidth=3) %>%
       dyOptions(useDataTimezone=T) %>%
-      dyAxis('y',label='Q (mm/hr)')
+      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,0.3))
   })
 
   output$b1 <- renderDygraph({
@@ -276,7 +277,7 @@ shinyServer(function(input, output) {
       dySeries('RB.Q',color='darkblue',strokeWidth=3,fillGraph=F) %>%
       dySeries('RB.baseflow',color='cyan',strokeWidth=2.5,fillGraph=T) %>%
       dyOptions(useDataTimezone=T,fillAlpha=.3) %>%
-      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,1))
+      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
   })
   
   output$b2 <- renderDygraph({

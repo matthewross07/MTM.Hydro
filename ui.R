@@ -53,9 +53,9 @@ shinyUI(fluidPage(sidebarLayout(
                     'comp',
                     label = 'Compare Selected Catchment With:',
                     choices = list(
-                      'Different Treatment (Mined or Unmined)' = 1,
-                      'Different Size (1st vs 4th order)' = 2,
-                      'No Comparison' = 3
+                      'Mined vs Unmined' = 1,
+                      '1st vs 4th Order streams' = 2,
+                      'Single Watershed' = 3
                     ),
                     selected = 3
                   )
@@ -84,7 +84,8 @@ shinyUI(fluidPage(sidebarLayout(
                     'base',
                     label = 'Choose baseflow data display',
                     choices = list('Compare baseflow between sites' = 1,
-                                   'Look at baseflow for each site'=2)
+                                   'Look at baseflow for each site'=2),
+                    selected=2
                   )
                 )),
                 br(),
@@ -96,10 +97,10 @@ shinyUI(fluidPage(sidebarLayout(
                 ),
                 conditionalPanel(
                   condition="input.base==2",
-                  dygraphOutput('b1', width = '95%', height = '150px'),
-                  dygraphOutput('b2', width = '95%', height = '150px'),
-                  dygraphOutput('b3', width = '95%', height = '150px'),
-                  dygraphOutput('b4', width = '95%', height = '150px')
+                  dygraphOutput('b1', width = '95%', height = '125px'),
+                  dygraphOutput('b2', width = '95%', height = '125px'),
+                  dygraphOutput('b3', width = '95%', height = '125px'),
+                  dygraphOutput('b4', width = '95%', height = '125px')
                 )
               )
             ))
