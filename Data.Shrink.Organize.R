@@ -22,14 +22,14 @@ all.sheds$Site <- c('RB', 'RB_1', 'REM', 'LF', 'MR14', 'MR2', 'LB', 'MR')
 
 #Subset to our primary sites
 isco.sheds <- all.sheds[all.sheds$Site %in% c('RB', 'LF', 'MR', 'LB'), ]
-#Check that it makes sense
-plot(isco.sheds, col = 1:4)
-legend(
-  'topleft',
-  pch = 15,
-  col = palette(),
-  legend = (isco.sheds$Site)
-)
+# #Check that it makes sense
+# plot(isco.sheds, col = 1:4)
+# legend(
+#   'topleft',
+#   pch = 15,
+#   col = palette(),
+#   legend = (isco.sheds$Site)
+# )
 
 
 
@@ -41,7 +41,7 @@ load('q.sc.yr.RData')
 
 
 
-#Read in and merge baseflow data Q is in ???
+#Read in and merge baseflow data 
 setwd(
   '~/Dropbox/Shared Science/NSF_MTM_All/MTM_MudRiver/tidy_data/Baseflow.For.Matt/H.and.H'
 )
@@ -60,9 +60,9 @@ hh$min10 <- qsct$min10
 #Remove extraneous columns
 q <- q[, 1:14]
 q <- merge(q, hh, by = 'min10')
-#RawData is at 10 minute interval, but I want to only display it at a 2 hour interval.
 
-seq.4hr <- round_minute(rep(seq(q$min10[1]+60*60,q$min10[nrow(q)],length=365*12),each=2*6),60)
+#RawData is at 10 minute interval, but I want to only display it at a 4 hour interval.
+seq.4hr <- round_minute(rep(seq(q$min10[1]+60*60,q$min10[nrow(q)],length=365*6),each=4*6),60)
 min.seq <- round_minute(seq(min(q$min10),max(q$min10),length=365*24*6),10)
 min.df <- data.frame(min10=min.seq,hr=seq.4hr)
 
