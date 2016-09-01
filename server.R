@@ -142,10 +142,30 @@ shinyServer(function(input, output) {
   output$pplots <- renderDygraph({
     p.col <- paste(id()$id, '.P', sep = '')
     p.q <- as.vector(q.hr[, p.col])
+    p.q[p.q==0] <- NA
     p.xts <- xts(p.q, order.by = q.hr$hr)
     names(p.xts) <- p.col
     dygraph(p.xts, group = 'dy') %>%
-      dyOptions(
+      dyOptions(plotter = "function barChartPlotter(e) {
+                var ctx = e.drawingContext;
+                var points = e.points;
+                var y_bottom = e.dygraph.toDomYCoord(0);  // see     http://dygraphs.com/jsdoc/symbols/Dygraph.html#toDomYCoord
+                
+                // This should really be based on the minimum gap
+                var bar_width = 2/3 * (points[1].canvasx - points[0].canvasx);
+                ctx.fillStyle = e.color;
+                
+                // Do the actual plotting.
+                for (var i = 0; i < points.length; i++) {
+                var p = points[i];
+                var center_x = p.canvasx;  // center of the bar
+                
+                ctx.fillRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
+                ctx.strokeRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
+                }
+  }",
         useDataTimezone = T,
         drawPoints = F,
         fillGraph = T,
@@ -153,7 +173,7 @@ shinyServer(function(input, output) {
         colors = 'blue',
         strokeWidth=3
       ) %>%
-      dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(20, 0))
+      dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(12, 0))
   })
   
   #Discharge plot with option to compare catchment to other sites. 
@@ -248,7 +268,7 @@ shinyServer(function(input, output) {
         colors = 'blue',
         strokeWidth=3
       ) %>%
-      dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(20, 0))
+      dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(12, 0))
     
     })
   output$q1.base <- renderDygraph({
