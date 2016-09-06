@@ -79,14 +79,20 @@ shinyUI(fluidPage(sidebarLayout(
                 "Baseflow",
                 br(),
                 fluidRow(column(
-                  12,
+                  5,
                   selectInput(
                     'base',
                     label = 'Choose baseflow data display',
                     choices = list('Compare baseflow between sites' = 1,
-                                   'Look at baseflow for each site'=2),
+                                   'Flow seperation at each site'=2),
                     selected=2
-                  )
+                  )),
+                  column(7,
+                         h5("Baseflow was seperated from stormflow using",
+                            a("Hewlett and Hibbert 1966.", href="http://coweeta.uga.edu/publications/pubs_martha_new_01282003/Batch_1_@300dpi/PDF/851.pdf"),
+                         "This method
+                            assumes a linear rise in baseflow during storms, which is why you will see linear baseflow increases
+                            during large or successive storms")
                 )),
                 br(),
                 conditionalPanel(

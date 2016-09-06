@@ -50,7 +50,7 @@ shinyServer(function(input, output) {
       colorFactor(c.col,
                   domain = isco.sheds$BigName)
     leaflet() %>% addProviderTiles("Esri.WorldTopoMap", group = 'Topo Map') %>%
-      addProviderTiles('MapQuestOpen.Aerial', group = 'Aerial Imagery') %>%
+      addProviderTiles('Esri.WorldImagery', group = 'Aerial Imagery') %>%
       addPolygons(
         data = isco.sheds,
         weight = 3,
@@ -126,7 +126,7 @@ shinyServer(function(input, output) {
   },deleteFile=F)
 
 
-  ######---------------------------Hydro Flux Tab ----------------------------------######
+#Hydro.Flux ######---------------------------Hydro Flux Tab ----------------------------------######
   
   
   #Get comparison data for dygraph from radiobutton input
@@ -195,10 +195,14 @@ shinyServer(function(input, output) {
     names(q.xts) <- q.col
     dygraph(q.xts, group = 'dy') %>%
       dyOptions(useDataTimezone = T, drawPoints = F,colors=dy.cols,strokeWidth=2) %>%
-      dyAxis('y',label='Q (mm/hr)')
+      dyAxis('y',label='Q (mm/hr)') 
   })
   
-  #Reactive plot that generates ecdf and cum.sum and cumulative diff plots based on DyGraph window. 
+  
+  
+##Reactive Baseplots ------------------Reactive Baseplots---------------###
+  
+  #plot that generates ecdf and cum.sum and cumulative diff plots based on DyGraph window. 
   output$cume.plot <- renderPlot({
     #Setup empty date vector and store dygraph dates in it, or, if null, use max window. 
     dts <- numeric()
@@ -255,16 +259,39 @@ shinyServer(function(input, output) {
       legend('center',lty=1,col=dy.cols[1],legend=id()$id)
     }
   })
+  
+  
+  
+#Baseflow Tab -----------------------------------Baseflow Tab ---------------------------------####  
   output$p.base <- renderDygraph({
     #Get an average P column
     p.xts <- xts(rowMeans(q.hr[,grep('.P',names(q.hr))]),order.by=q.hr$hr)
-
+    p.xts[p.xts==0] <- NA
     dygraph(p.xts,group='base') %>%
-      dyOptions(
+      dyOptions(plotter="function barChartPlotter(e) {
+                var ctx = e.drawingContext;
+                var points = e.points;
+                var y_bottom = e.dygraph.toDomYCoord(0);  // see     http://dygraphs.com/jsdoc/symbols/Dygraph.html#toDomYCoord
+                
+                // This should really be based on the minimum gap
+                var bar_width = 2/3 * (points[1].canvasx - points[0].canvasx);
+                ctx.fillStyle = e.color;
+                
+                // Do the actual plotting.
+                for (var i = 0; i < points.length; i++) {
+                var p = points[i];
+                var center_x = p.canvasx;  // center of the bar
+                
+                ctx.fillRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
+                ctx.strokeRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
+                }
+  }",
         useDataTimezone = T,
         drawPoints = F,
         fillGraph = T,
-        fillAlpha = .8,
+        fillAlpha = 1,
         colors = 'blue',
         strokeWidth=3
       ) %>%
@@ -296,7 +323,7 @@ shinyServer(function(input, output) {
     dygraph(q1,group='base',height='250px') %>%
       dySeries('RB.Q',color='darkblue',strokeWidth=3,fillGraph=F) %>%
       dySeries('RB.baseflow',color='cyan',strokeWidth=2.5,fillGraph=T) %>%
-      dyOptions(useDataTimezone=T,fillAlpha=.3) %>%
+      dyOptions(useDataTimezone=T,fillAlpha=.8) %>%
       dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
   })
   
@@ -306,7 +333,7 @@ shinyServer(function(input, output) {
     dygraph(q1,group='base',height='250px') %>%
       dySeries('LB.Q',color='darkred',strokeWidth=3,fillGraph=F) %>%
       dySeries('LB.baseflow',color='orange',strokeWidth=2.5,fillGraph=T) %>%
-      dyOptions(useDataTimezone=T,fillAlpha=.3) %>%
+      dyOptions(useDataTimezone=T,fillAlpha=.8) %>%
       dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
   })
   
@@ -316,7 +343,7 @@ shinyServer(function(input, output) {
     dygraph(q1,group='base',height='250px') %>%
       dySeries('LF.Q',color='darkblue',strokeWidth=3,fillGraph=F) %>%
       dySeries('LF.baseflow',color='cyan',strokeWidth=2.5,fillGraph=T) %>%
-      dyOptions(useDataTimezone=T,fillAlpha=.3) %>%
+      dyOptions(useDataTimezone=T,fillAlpha=.8) %>%
       dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
   })
   
@@ -326,9 +353,8 @@ shinyServer(function(input, output) {
     dygraph(q1,group='base',height='250px') %>%
       dySeries('MR.Q',color='darkred',strokeWidth=3,fillGraph=F) %>%
       dySeries('MR.baseflow',color='orange',strokeWidth=2.5,fillGraph=T) %>%
-      dyOptions(useDataTimezone=T,fillAlpha=.3) %>%
+      dyOptions(useDataTimezone=T,fillAlpha=.8) %>%
       dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
   })
   
 })
-?dyOptions
