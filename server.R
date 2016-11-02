@@ -2,17 +2,63 @@
 
 
 #Load packages
+#Load packages
 library(shiny)
 library(leaflet)
 library(ggplot2)
 library(dygraphs)
+library(scales)
 library(sp)
 library(xts)
 library(magicaxis)
 
-
 #Load data
 load('Hydro.Shine.RData')
+load('Flux.Shine.RData')
+#Loads 7 data types.
+#d.p is daily mean precip in mm/hr
+#d.q is daily mean Q in mm/hr
+#d.sc is daily mean SC in us/cm
+#c.l is a list of daily mean concentration
+d.q <- d.q[-1, ]
+
+#Order flux dat sites.
+
+full.flux$Site <- factor(full.flux$Site, c('RB', 'LF', 'LB', 'MR'))
+full.flux$Site.Ion <- paste(full.flux$Ion, full.flux$Site, sep = '.')
+
+#Setup larger font size.
+theme_set(theme_grey(base_size = 16))
+
+#Setup a comparison table for plotting data on the same dygraph.
+c.col <- c("#008B00", "#66CD00", "#8B0000", "#CD4F39")
+
+relcum <- function(x) {
+  y = cumsum(x) / sum(x)
+  return(y)
+}
+
+
+
+#Create a comparison data table.
+c.table <- data.frame(
+  Site = c('RB', 'LF', 'LB', 'MR'),
+  Treatment = c('LB', 'MR', 'RB', 'LF'),
+  Size = c('LF', 'RB', 'MR', 'LB'),
+  Color = c.col,
+  stringsAsFactors = F
+)
+
+
+#Setup a color lookup table for elements.
+ions <- c('Ca', 'Na', 'K', 'Mg', 'SO4', 'HCO3', 'Cl', 'TDS')
+i.col <- data.frame(
+  ions = ions,
+  col = colorRampPalette(c('#313695', '#fdae61', '#a50026'))(8),
+  mcol = colorRampPalette(c('#053061', '#fddbc7', '#b2182b'))(8),
+  stringsAsFactors = F
+)
+
 
 
 
@@ -27,11 +73,7 @@ g.d <- data.frame(Site=c('RB','LF','LB','MR'),OldSlope=c(19.3,17.5,20.5,21.6),
 #Setup a comparison table for plotting data on the same dygraph. 
 c.col <- c("#008B00", "#66CD00", "#8B0000", "#CD4F39")
 
-c.table <- data.frame(Site = c('RB','LF','LB','MR'),
-                      Treatment=c('LB','MR','RB','LF'),
-                      Size=c('LF','RB','MR','LB'),
-                      Color = c.col,
-                      stringsAsFactors=F)
+
 #Set line width for all plots
 ld <- 4
 
@@ -126,7 +168,7 @@ shinyServer(function(input, output) {
   },deleteFile=F)
 
 
-#Hydro.Flux ######---------------------------Hydro Flux Tab ----------------------------------######
+#Hydro.Flux ######---------------------------Hydro SC Flux Tab ----------------------------------######
   
   
   #Get comparison data for dygraph from radiobutton input
@@ -176,30 +218,61 @@ shinyServer(function(input, output) {
       dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(12, 0))
   })
   
-  #Discharge plot with option to compare catchment to other sites. 
+  
+  #Discharge plot with option to compare catchment to other sites.
   output$qplots <- renderDygraph({
-    if(input$comp == 3){
-      q.col <- paste(id()$id, '.Q.mm', sep = '')
-      dy.cols <- c.table[c.table$Site==id()$id,'Color']
-    }else{
-      q.col <- paste(c(id()$id,c.dat()),'.Q.mm',sep='')
-      dy.cols <- c(c.table[c.table$Site==id()$id,'Color'],
-                   c.table[c.table$Site==c.dat(),'Color'])
+    #Get data and display color information.
+    if (input$comp == 3) {
+      q.col <- id()$id
+      dy.cols <- c.table[c.table$Site == id()$id, 'Color']
+    } else{
+      q.col <- c(id()$id, c.dat())
+      dy.cols <- c(c.table[c.table$Site == id()$id, 'Color'],
+                   c.table[c.table$Site == c.dat(), 'Color'])
     }
-    if(id()$id %in% c('MR','LB')){
+    if (id()$id %in% c('MR', 'LB')) {
       q.col <- rev(q.col)
       dy.cols <- rev(dy.cols)
     }
-    q.q <- q.hr[,q.col]
-    q.xts <- xts(q.q, order.by = q.hr$hr)
+    q.q <- d.q[, q.col]
+    q.xts <- xts(q.q, order.by = d.q$date)
     names(q.xts) <- q.col
     dygraph(q.xts, group = 'dy') %>%
-      dyOptions(useDataTimezone = T, drawPoints = F,colors=dy.cols,strokeWidth=2) %>%
-      dyAxis('y',label='Q (mm/hr)') 
+      dyOptions(
+        useDataTimezone = T,
+        drawPoints = F,
+        colors = dy.cols,
+        strokeWidth = 2
+      ) %>%
+      dyAxis('y', label = 'Q (mm/hr)')
   })
   
-  
-  
+  output$scplots <- renderDygraph({
+    #Get data and display color information.
+    if (input$comp == 3) {
+      q.col <- id()$id
+      dy.cols <- c.table[c.table$Site == id()$id, 'Color']
+    } else{
+      q.col <- c(id()$id, c.dat())
+      dy.cols <- c(c.table[c.table$Site == id()$id, 'Color'],
+                   c.table[c.table$Site == c.dat(), 'Color'])
+    }
+    if (id()$id %in% c('MR', 'LB')) {
+      q.col <- rev(q.col)
+      dy.cols <- rev(dy.cols)
+    }
+    q.q <- d.sc[, q.col]
+    sc.xts <- xts(q.q, order.by = d.sc$date)
+    names(sc.xts) <- q.col
+    dygraph(sc.xts, group = 'dy') %>%
+      dyOptions(
+        useDataTimezone = T,
+        drawPoints = F,
+        colors = dy.cols,
+        strokeWidth = 2
+      ) %>%
+      dyAxis('y', label = 'SC (uS/cm)')
+  })
 ##Reactive Baseplots ------------------Reactive Baseplots---------------###
   
   #plot that generates ecdf and cum.sum and cumulative diff plots based on DyGraph window. 
@@ -317,44 +390,65 @@ shinyServer(function(input, output) {
       dyAxis('y',label='Q (mm/hr)',valueRange=c(0,0.3))
   })
 
+
+#Baseflow only
+  #Reactive y axis ranges
+  
+  rng <- reactive({
+    dts <-  c(min(q.hr$hr), max(q.hr$hr))
+    rng <- c(0,5)
+    if(!is.null(input$b1_date_window)){
+      dts[1] <- as.POSIXct(as.Date(input$b1_date_window[[1]]))
+      dts[2] <- as.POSIXct(as.Date(input$b1_date_window[[2]]))
+      d <- q.hr[which(q.hr$hr > dts[1] & q.hr$hr < dts[2]),]
+      rng[1] <- min(c(d$RB.Q.mm,d$LB.Q.mm,d$MR.Q.mm,d$LF.Q.mm))
+      rng[2] <- max(c(d$RB.Q.mm,d$LB.Q.mm,d$MR.Q.mm,d$LF.Q.mm))
+    }
+    return(rng)
+  })
+  
   output$b1 <- renderDygraph({
+    ran <- rng()
     q1 <- xts(q.hr[,c('RB.hh','RB.Q.mm')],order.by=q.hr$hr)
     names(q1) <- c('RB.baseflow','RB.Q')
     dygraph(q1,group='base',height='250px') %>%
       dySeries('RB.Q',color='darkblue',strokeWidth=3,fillGraph=F) %>%
       dySeries('RB.baseflow',color='cyan',strokeWidth=2.5,fillGraph=T) %>%
       dyOptions(useDataTimezone=T,fillAlpha=.8) %>%
-      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
+      dyAxis('y',label='Q (mm/hr)',valueRange=ran)
   })
   
   output$b2 <- renderDygraph({
+    ran <- rng()
     q1 <- xts(q.hr[,c('LB.hh','LB.Q.mm')],order.by=q.hr$hr)
     names(q1) <- c('LB.baseflow','LB.Q')
     dygraph(q1,group='base',height='250px') %>%
       dySeries('LB.Q',color='darkred',strokeWidth=3,fillGraph=F) %>%
       dySeries('LB.baseflow',color='orange',strokeWidth=2.5,fillGraph=T) %>%
       dyOptions(useDataTimezone=T,fillAlpha=.8) %>%
-      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
+      dyAxis('y',label='Q (mm/hr)',valueRange=ran)
   })
   
   output$b3 <- renderDygraph({
+    ran <- rng()
     q1 <- xts(q.hr[,c('LF.hh','LF.Q.mm')],order.by=q.hr$hr)
     names(q1) <- c('LF.baseflow','LF.Q')
     dygraph(q1,group='base',height='250px') %>%
       dySeries('LF.Q',color='darkblue',strokeWidth=3,fillGraph=F) %>%
       dySeries('LF.baseflow',color='cyan',strokeWidth=2.5,fillGraph=T) %>%
       dyOptions(useDataTimezone=T,fillAlpha=.8) %>%
-      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
+      dyAxis('y',label='Q (mm/hr)',valueRange=ran)
   })
   
   output$b4 <- renderDygraph({
+    ran <- rng()
     q1 <- xts(q.hr[,c('MR.hh','MR.Q.mm')],order.by=q.hr$hr)
     names(q1) <- c('MR.baseflow','MR.Q')
     dygraph(q1,group='base',height='250px') %>%
       dySeries('MR.Q',color='darkred',strokeWidth=3,fillGraph=F) %>%
       dySeries('MR.baseflow',color='orange',strokeWidth=2.5,fillGraph=T) %>%
       dyOptions(useDataTimezone=T,fillAlpha=.8) %>%
-      dyAxis('y',label='Q (mm/hr)',valueRange=c(0,3))
+      dyAxis('y',label='Q (mm/hr)',valueRange=ran)
   })
   
 })

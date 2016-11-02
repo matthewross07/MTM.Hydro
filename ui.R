@@ -17,7 +17,7 @@ shinyUI(fluidPage(sidebarLayout(
   sidebarPanel(
     p(
       "This application shows how mountaintop mining in Central Appalachia has changed
-      the hydrology of two catchments that have been heavily mined. The study follows a paired
+      the hydrology and water chemistry of two catchments that have been heavily mined. The study follows a paired
       watershed approach, where we have two reference catchment that are unmined paired with two
       catchments that have been mined. The small catchments (~1km2) are Rich's Branch (reference) and
       Laurel Branch (99% mined), while the large ones (35 km2) are Left Fork (reference) and Mud River.
@@ -45,36 +45,40 @@ shinyUI(fluidPage(sidebarLayout(
                 imageOutput('geogif')
               ),
               tabPanel(
-                "Hydrologic Flux",
+                "Hydrology and Specific Conductance",
                 br(),
                 fluidRow(column(
-                  6,
-                  selectInput(
-                    'comp',
-                    label = 'Compare Selected Catchment With:',
-                    choices = list(
-                      'Mined vs Unmined' = 1,
-                      '1st vs 4th Order streams' = 2,
-                      'Single Watershed' = 3
-                    ),
-                    selected = 3
+                    4,
+                    selectInput(
+                      'comp',
+                      label = 'Compare Selected Catchment With:',
+                      choices = list(
+                        'Mined vs Unmined' = 1,
+                        '1st vs 4th Order streams' = 2,
+                        'Single Watershed' = 3
+                      ),
+                      selected = 3
+                    )
+                  ),column(
+                  8,
+                  h5(
+                    'The top graph shows daily mean rainfall rates across all sites. The middle graph shows
+                    daily mean discharge and the bottom graph shows daily mean specific conductance, a proxy measure for
+                    salinity and total ion concentration. To change sites click on a new watershed on the map.
+                    You can zoom into each graph to look at specific time periods.'
                   )
-                )),
-                #   column(6,
-                #          selectInput('comp2',label='Compare Data for:',
-                #                      choices=list('1st Order Catchments'=1,
-                #                                   '4th Order Catchments'=2)))
-                #)
+                  )),
+                
                 br(),
                 dygraphOutput('pplots', width = '95%', height =
                                 '100px'),
                 br(),
                 dygraphOutput('qplots', width = '95%', height =
-                                '200px'),
+                                '150px'),
                 br(),
-                plotOutput('cume.plot', width = '95%', height =
-                             '300px')
-              ),
+                dygraphOutput('scplots', width = '95%', height =
+                                '150px')
+                ),
               tabPanel(
                 "Baseflow",
                 br(),
@@ -88,7 +92,7 @@ shinyUI(fluidPage(sidebarLayout(
                     selected=2
                   )),
                   column(7,
-                         h5("Baseflow was seperated from stormflow using",
+                         h5("Baseflow was seperated from stormflow using methods following",
                             a("Hewlett and Hibbert 1966.", href="http://coweeta.uga.edu/publications/pubs_martha_new_01282003/Batch_1_@300dpi/PDF/851.pdf"),
                          "This method
                             assumes a linear rise in baseflow during storms, which is why you will see linear baseflow increases
