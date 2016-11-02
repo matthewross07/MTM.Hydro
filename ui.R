@@ -62,8 +62,8 @@ shinyUI(fluidPage(sidebarLayout(
                   ),column(
                   8,
                   h5(
-                    'The top graph shows daily mean rainfall. The middle graph shows
-                    daily mean discharge and the bottom graph shows daily mean specific conductance, a proxy measure for
+                    'The top graph shows total daily rainfall. The middle graph shows
+                    total daily discharge and the bottom graph shows daily mean specific conductance, a proxy measure for
                     salinity and total ion concentration. Bottom graphs show cumulative discharge trends.  To change sites click on a new watershed on the map.
                     You can zoom into each graph to look at specific time periods.'
                   )

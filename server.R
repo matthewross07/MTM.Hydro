@@ -80,7 +80,7 @@ ld <- 4
 
 
 #Reorganize so leaflet plot allows for clicking on LB catchment
-isco.sheds <- isco.sheds[c(1, 2, 4, 3), ]
+#isco.sheds <- isco.sheds[c(1, 2, 4, 3), ]
 
 #Setup shiny server
 shinyServer(function(input, output) {
@@ -182,11 +182,10 @@ shinyServer(function(input, output) {
   
   #Setup basic dygraph output with Hyetograph on top.
   output$pplots <- renderDygraph({
-    p.col <- paste(id()$id, '.P', sep = '')
-    p.q <- as.vector(q.hr[, p.col])
-    p.q[p.q==0] <- NA
-    p.xts <- xts(p.q, order.by = q.hr$hr)
-    names(p.xts) <- p.col
+    d.p$Precip[d.p$Precip == 0] <- NA
+    s <- id()$id
+    p.xts <- xts(d.p$Precip*24, order.by = d.p$date)
+    names(p.xts) <- 'Precip'
     dygraph(p.xts, group = 'dy') %>%
       dyOptions(plotter = "function barChartPlotter(e) {
                 var ctx = e.drawingContext;
@@ -215,7 +214,7 @@ shinyServer(function(input, output) {
         colors = 'blue',
         strokeWidth=3
       ) %>%
-      dyAxis('y', label = 'Precip (mm/hr)', valueRange = c(12, 0))
+      dyAxis('y', label = 'Precip (mm/day)', valueRange = c(80, 0))
   })
   
   
@@ -236,6 +235,7 @@ shinyServer(function(input, output) {
     }
     q.q <- d.q[, q.col]
     q.xts <- xts(q.q, order.by = d.q$date)
+    q.xts <- q.xts*24
     names(q.xts) <- q.col
     dygraph(q.xts, group = 'dy') %>%
       dyOptions(
@@ -244,7 +244,7 @@ shinyServer(function(input, output) {
         colors = dy.cols,
         strokeWidth = 2
       ) %>%
-      dyAxis('y', label = 'Q (mm/hr)')
+      dyAxis('y', label = 'Q (mm/day)')
   })
   
   output$scplots <- renderDygraph({
