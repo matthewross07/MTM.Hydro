@@ -62,9 +62,9 @@ shinyUI(fluidPage(sidebarLayout(
                   ),column(
                   8,
                   h5(
-                    'The top graph shows daily mean rainfall rates across all sites. The middle graph shows
+                    'The top graph shows daily mean rainfall. The middle graph shows
                     daily mean discharge and the bottom graph shows daily mean specific conductance, a proxy measure for
-                    salinity and total ion concentration. To change sites click on a new watershed on the map.
+                    salinity and total ion concentration. Bottom graphs show cumulative discharge trends.  To change sites click on a new watershed on the map.
                     You can zoom into each graph to look at specific time periods.'
                   )
                   )),
@@ -74,10 +74,12 @@ shinyUI(fluidPage(sidebarLayout(
                                 '100px'),
                 br(),
                 dygraphOutput('qplots', width = '95%', height =
-                                '150px'),
+                                '125px'),
                 br(),
                 dygraphOutput('scplots', width = '95%', height =
-                                '150px')
+                                '125px'),
+                br(),
+                plotOutput('cume.plot',width='95%',height='200px')
                 ),
               tabPanel(
                 "Baseflow",

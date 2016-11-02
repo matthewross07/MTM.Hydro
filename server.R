@@ -297,15 +297,15 @@ shinyServer(function(input, output) {
     #Plot if no comparison selected
     q.q <- q.hr[,c('hr',q.col)]
     q.sub <- q.q[q.q$hr > dts[1] & q.q$hr < dts[2],]
-    q.cum1 <- cumsum(q.sub[,q.col[1]])
+    q.cum1 <- 4*cumsum(q.sub[,q.col[1]])
     cd1 <- ecdf(q.sub[,q.col[1]])
-    fd <- data.frame(y=knots(cd1),x=1-cd1(knots(cd1)))
+    fd <- data.frame(y=4*knots(cd1),x=1-cd1(knots(cd1)))
     par(mfrow=c(1,3),mar=c(3,3,2,2),mgp=c(2,1,0),cex=1,font.lab=2)
     #Plot if comparison selected
     if(input$comp != 3){
-      q.cum2 <- cumsum(q.sub[,q.col[2]])
+      q.cum2 <- 4*cumsum(q.sub[,q.col[2]])
       cd2 <- ecdf(q.sub[,q.col[2]])
-      fd2<- data.frame(y=knots(cd2),x=1-cd2(knots(cd2)))
+      fd2<- data.frame(y=4*knots(cd2),x=1-cd2(knots(cd2)))
       plot(y~x,data=fd,col=dy.cols[1],ylab='Q (mm/hr)',main='Flow Duration Curve',yaxt='n',
            xlab='Exceedance',type='l',lwd=ld,log='y',
            ylim=c(min(min(fd2$y,na.rm=T),min(fd$y,na.rm=T)),max(max(fd$y,na.rm=T),max(fd2$y,na.rm=T))))
@@ -324,6 +324,7 @@ shinyServer(function(input, output) {
       }
       plot(diff~q.sub$hr,col='black',type='l',lwd=ld,
            ylab=paste('Q Diff (mm) (',label,')',sep=''),main='Q Diff',xlab='')
+      abline(h=0,col='red')
     }else{
       plot(y~x,data=fd,col=dy.cols[1],ylab='Q (mm/hr)',xlab='Exceedance',type='l',lwd=ld,log='y',main='Flow Duration Curve',yaxt='n')
       magaxis(2)
